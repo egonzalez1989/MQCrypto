@@ -1,5 +1,5 @@
-load('/home/edgar/Documents/UOV/uov.sage')
-load('/home/edgar/Documents/UOV/cryptokeys.sage')
+load('/home/edgar/MQCrypto/python/uov/uov.sage')
+load('/home/edgar/MQCrypto/python/uov/cryptokeys.sage')
 import copy
 import sys
 
@@ -19,8 +19,8 @@ reset() # Erase all previously defined variables
 ###################################################
 import copy
 import sys
-load('/home/edgar/Documents/UOV/uov.sage')
-load('/home/edgar/Documents/UOV/cryptokeys.sage')
+load('/home/edgar/MQCrypto/python/uov/uov.sage')
+load('/home/edgar/MQCrypto/python/uov/cryptokeys.sage')
         
 ###################################################
 #                  Initialization                 #
