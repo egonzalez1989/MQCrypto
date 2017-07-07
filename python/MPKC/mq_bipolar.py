@@ -1,4 +1,5 @@
 from sage.all import *
+import multiprocessing as mp
 
 ''' General class for bipolar type systems
 '''
@@ -96,4 +97,16 @@ class MQBipolar(object):
 		lvec = Fqvec[:M[0][0].nrows()]
 		for i in range(len(M)):
 			res.append(lvec*M[i][0]*Fqvec + M[i][1]*Fqvec + M[i][2])
+		'''inputs = map(lambda i: (M[i], lvec, Fqvec), range(len(M)))
+#		print inputs
+		print 'Trying parallel'
+		pool = mp.Pool(processes=4)
+		res = pool.map(self.applyQuadMap, inputs)'''
+#		print res
 		return vector(res)
+
+	def applyQuadMap(self, inputs):
+		Q = inputs[0]
+		lvec = inputs[1]
+		Fqvec = inputs[2]
+		return lvec*Q[0]*Fqvec + Q[1]*Fqvec + Q[2]
