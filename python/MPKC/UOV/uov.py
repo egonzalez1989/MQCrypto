@@ -1,6 +1,5 @@
 from sage.all import *
 from ..mq_bipolar import *
-import multiprocessing as mp
 
 class UOV(MQBipolar):
 	
@@ -14,41 +13,18 @@ class UOV(MQBipolar):
 		MS = MatrixSpace(self.Fq, self.v, self.n)
 		VS = VectorSpace(self.Fq, self.n)
 		for i in range(self.o):
-			self.Q.append([MS.random_element(), VS.random_element(), self.Fq.random_element()])
+			A = MS.random_element()
+			for j in range(self.v):
+				for k in range(j):
+					A[j,k] = 0
+			self.Q.append([A, VS.random_element(), self.Fq.random_element()])
 
 	def genP(self):
-		self.P = [0]*self.o
 		A = self.T.A()
 		At = A.submatrix(nrows = self.v).transpose()
 		b = self.T.b()
 		bt = b[:self.v]
-		inputs = map(lambda i: (i, A, At, b, bt), range(self.o))
-		pool = mp.Pool(processes=4)
-		res = pool.map(self.genPaux, inputs)
-		for i in range(self.o):
-			self.P[res[i][0]] = res[i][1]
-#		print 'P = {}'.format(self.P)
-		'''	for i in range(len(self.Q)):
-			Mi = self.Q[i][0]
-			vi = self.Q[i[1]
-			ci = self.Q[i][2]
-			MiA = Mi*A
-			Mib = Mi*b
-			append([At*MiA, At*Mib + bt*MiA + A.transpose()*vi, vi*b + bt*Mib + ci])'''
-
-	def genPaux(self, inputs):
-		idx = inputs[0]
-		A = inputs[1]
-		At = inputs[2]
-		b = inputs[3]
-		bt = inputs[4]
-		Mi = self.Q[idx][0]
-		vi = self.Q[idx][1]
-		ci = self.Q[idx][2]
-		MiA = Mi*A
-		Mib = Mi*b
-		Pidx = [At*MiA, At*Mib + bt*MiA + A.transpose()*vi, vi*b + bt*Mib + ci]
-		return idx, Pidx 
+		self.P = map(lambda i: self.genPi(A, At, b, bt, i), range(self.m))
 
 	def genS(self):
 		pass
@@ -63,33 +39,44 @@ class UOV(MQBipolar):
 		while not found and count < 100:
 			try:
 				# Set random values to vinegar variables
-				xv = []
-				for i in range(self.v):
-					xv.append(self.Fq.random_element())
+				xv = map(lambda i: self.Fq.random_element(), range(self.v))
 				alpha = xv[:]
 				alpha.extend(Xn[self.v:])
 				alpha = vector(alpha)
-				alpha = self.applyQuadMatrix(self.Q, alpha)
-				
+				alpha = self.Qmap(alpha)
+
+				# Create and solve linear system of oil variables
 				A = []
 				b = []
-				for i in range(len(alpha)):
-					A.append(map(lambda d: alpha[i].coefficient(d), dXo))
-					b.append(alpha[i].constant_coefficient())
+				for px in alpha:
+					A.append(map(lambda deg: px.coefficient(deg), dXo))
+					b.append(px.constant_coefficient())
 				A = matrix(self.Fq, A)
 				b = vector(self.Fq, b) + Fqvec
 
+				# Add values of solutions for oil variables
 				y = A.solve_right(b)
 				xv.extend(y)
-
 				found = True
 			except ValueError:
 				count += 1
-				print 'Not'
 		if (count == 100):
 			raise ValueError('Solution not found')
-		print('found: {}'.format(xv))
+#		print('found: {}'.format(xv))
 		return vector(xv)
 
 	def ISmap(self, Fqvec):
 		return Fqvec
+
+	def Smap(self, Fqvec):
+		return Fqvec
+
+	def genPi(self, A, At, b, bt, i):
+		Mi = self.Q[i][0]
+		vi = self.Q[i][1]
+		ci = self.Q[i][2]
+		start = time.time()
+		MiA = Mi*A
+		Mib = Mi*b
+		Pi = [At*MiA, At*Mib + bt*MiA + A.transpose()*vi, vi*b + bt*Mib + ci]
+		return Pi

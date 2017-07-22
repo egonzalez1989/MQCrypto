@@ -1,5 +1,6 @@
 from sage.all import *
 import multiprocessing as mp
+import time
 
 ''' General class for bipolar type systems
 '''
@@ -8,6 +9,7 @@ class MQBipolar(object):
 	def __init__(self, q, n, m):
 		# Hopefully a Conway polynomial exists in database.
 		self.Fq = GF(q, 'X')
+		self.q = q
 		self.n = n
 		self.m = m
 		self.PFqn = PolynomialRing(self.Fq, 'X', self.n)
@@ -46,9 +48,8 @@ class MQBipolar(object):
 		return AG.random_element()
 
 	def genP(self):
-		PRFq_n = PolynomialRing(self.Fq, 'X', n)
-		Xi = vector(PRFq_n.gens())
-		self.P = Smap(Qmap(Tmap(Xi)))
+		Xi = vector(self.PFqn.gens())
+		self.P = self.Smap(self.Qmap(self.Tmap(Xi)))
 
 	def Pmap(self, Fqvec):
 		return self.applyMap(self.P, Fqvec)
@@ -95,18 +96,12 @@ class MQBipolar(object):
 	def applyQuadMatrix(self, M, Fqvec):
 		res = []
 		lvec = Fqvec[:M[0][0].nrows()]
-		for i in range(len(M)):
+		for i in range(len(M)):	
 			res.append(lvec*M[i][0]*Fqvec + M[i][1]*Fqvec + M[i][2])
-		'''inputs = map(lambda i: (M[i], lvec, Fqvec), range(len(M)))
-#		print inputs
-		print 'Trying parallel'
-		pool = mp.Pool(processes=4)
-		res = pool.map(self.applyQuadMap, inputs)'''
-#		print res
 		return vector(res)
 
-	def applyQuadMap(self, inputs):
-		Q = inputs[0]
-		lvec = inputs[1]
-		Fqvec = inputs[2]
-		return lvec*Q[0]*Fqvec + Q[1]*Fqvec + Q[2]
+	# def applyQuadMap(self, lvec, Fqvec, M):
+	# 	start = time.time()
+	# 	res = map(lambda i: lvec*M[i][0]*Fqvec + M[i][1]*Fqvec + M[i][2], M)
+	# 	print('QuadMap {}: {}'.format(i, time.time() - start))
+	# 	return res
