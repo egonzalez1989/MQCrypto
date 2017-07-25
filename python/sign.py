@@ -1,6 +1,5 @@
 from sage.all import *
 from operations import *
-import sys
 
 # keygen scheme [args] outfile
 scheme = sys.argv[1]
@@ -14,7 +13,13 @@ elif 'Matsumoto' in scheme:
 	# args for MatsumotoImai: q, t, n (size of Fq, exponent for q^t+1, degree of extension)
 	argDict = {'q': int(sys.argv[i]), 't': int(sys.argv[i+1]), 'n': int(sys.argv[i+2])}
 	i += 3
-
-outfile = sys.argv[i]
-genKeyPair(scheme, outfile, argDict)
-print('Key pair generated.')
+msg = sys.argv[i]
+i += 1
+keyfile = sys.argv[i]
+i += 1
+if i < len(sys.argv):
+	outfile = sys.argv[i]
+else:
+	outfile = keyfile
+sign(scheme, msg, keyfile, outfile, argDict)
+print('Signature generated.')

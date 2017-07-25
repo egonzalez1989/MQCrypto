@@ -22,8 +22,12 @@ def intToVec(v, Fq, n):
 		pad = pad | 1
 		i += 1
 	i = 0
+	if d > 1:
+		to_int = Fq.fetch_int
+	else:
+		to_int = Fq
 	while i < n:
-		V.append(Fq.fetch_int(v & pad))
+		V.append(to_int(v & pad))
 		v = v >> d
 		i += 1
 	return vector(V)		
@@ -32,12 +36,17 @@ def vecToInt(vec):
 	l = len(vec)
 	Fq = vec[0].parent()
 	d = Fq.degree()
-	y = 1
+	y = 0
+	if d > 1:
+		for i in range(l):
+			y = y | (vec[i].integer_representation() << (i * d))
+	else:
+		for i in range(l):
+			y = y | int(vec[i]) << (i * d)
+
 	# for i in range(l):
-	# 	y = y | (vec[i].integer_representation() << (i * d))
-	for i in range(l):
-		y = (y << d) | vec[i].integer_representation()
-	map(lambda e: e.integer_representation(), vec)
+	# 	y = (y << d) | vec[i].integer_representation()
+	# map(lambda e: e.integer_representation(), vec)
 	return y
 
 def affToBin(Aff):
@@ -67,7 +76,7 @@ def vecToBin(vec):
 		j += 8
 		i += 8
 	if i < l:
-		ba.extend(intToBin(vecToInt(vec[i:j]), size))
+		ba.extend(intToBin(vecToInt(vec[i:]), int(ceil(d*(l-i) / 8.0))))
 	return ba
 
 def matToBin(mat):
@@ -116,17 +125,17 @@ def upMatToVec(mat):
 	return vec
 
 def binToUpMat(ba, Fq, n, m):
-    v = binToInt(ba)
-    return intToUpMat(v, Fq, n, m)
+	v = binToInt(ba)
+	return intToUpMat(v, Fq, n, m)
 
 def intToUpMat(v, Fq, n, m):
-    d = Fq.degree()
-    mat = matrix(Fq, n, m)
-    for i in range(n):
-        #print v
-        mat[i] = intToVec(v, Fq, m)
-        v = (v >> (m*d)) << (i+1)*d
-    return mat
+	d = Fq.degree()
+	mat = matrix(Fq, n, m)
+	for i in range(n):
+		#print v
+		mat[i] = intToVec(v, Fq, m)
+		v = (v >> (m*d)) << (i+1)*d
+	return mat
 
 '''
 '''
@@ -154,43 +163,63 @@ def quadPolToVec(p):
 	return vec
 
 def sysToBin(P):
-    p = P[0]
-    vec = []
-    if type(p) == list or type(p) == tuple:
-        for p in P:
-            vec.extend(upMatToVec(p[0]))
-            vec.extend(p[1])
-            vec.append(p[2])
-    else:
-        for p in P:
-            vec.extend(quadPolToVec(p))
-    return vecToBin(vec)
+	p = P[0]
+	vec = []
+	if type(p) == list or type(p) == tuple:
+		for p in P:
+			vec.extend(upMatToVec(p[0]))
+			vec.extend(p[1])
+			vec.append(p[2])
+	else:
+		for p in P:
+			vec.extend(quadPolToVec(p))
+	return vecToBin(vec)
 
 def binToSys(ba, Fq, m, n1, n2 = 0):
-    P = []
-    n = n1 + n2
-    matsize = n1 * (n1+1) /2 + n2**2
-    chunksize = matsize + n + 1
-    d = Fq.degree()
-    size = d / 8
-    offset = 0
-    idxs = 0
-    idxe = int(ceil(chunksize * size))
-    degpow = 1 << d
-    for i in range(m):
-        Pi = []
-        v = binToInt(ba[idxs: idxe]) >> offset
-        Pi.append(intToUpMat(v, Fq, n1, n))
-        v = v >> d*matsize
-        Pi.append(intToVec(v, Fq, n))
-        v = v >> d*n
-        Pi.append(Fq.fetch_int(v % degpow))
-        offset = (offset + chunksize*d) % 8
-        aux = idxe
-        idxe = idxe + int((chunksize * d - offset) / 8.0)
-        idxs = aux - int(ceil(offset / 8.0))
-        P.append(Pi)
-    return P
+	P = []
+	n = n1 + n2
+	matsize = n1 * (n1+1) /2 + n1*n2
+	# print('matsize: {}'.format(matsize))
+	chunksize = matsize + n + 1
+	d = Fq.degree()
+	size = d / 8.0
+	offset = 0
+	idxs = 0
+	idxe = int(ceil(chunksize * size))
+	degpow = 1 << d
+	# print('chunksize: {}, size: {}, degpow: {}'.format(chunksize, size, degpow))
+	for i in range(m):
+		# print('*******P{}*********\nidxs: {}, idxe: {}, offset: {}'.format(i, idxs, idxe, offset))
+		Pi = []
+		v = binToInt(ba[idxs: idxe]) >> offset
+		# print('ba: {}'.format(''.join('{:02x}'.format(x) for x in ba[idxs: idxe])))
+		# print('{}: {}'.format('{0:02x}: '.format(v), v))
+		Pi.append(intToUpMat(v, Fq, n1, n))
+		v = v >> d*matsize
+		# print('{}: {}'.format('{0:02x}: '.format(v), v))
+		Pi.append(intToVec(v, Fq, n))
+		v = v >> d*n
+		# print('{}: {}'.format('{0:02x}: '.format(v), v))
+		if d > 1:
+			to_int = Fq.fetch_int
+		else:
+			to_int = Fq
+		Pi.append(to_int(v % degpow))
+		offset = (offset + chunksize*d) % 8
+		aux = idxe
+		idxe = idxe + int(ceil((chunksize * d - (-offset % 8)) / 8.0))
+		idxs = aux - int(ceil(offset / 8.0))
+		# print('jump: {}'.format(int(ceil((chunksize * d + offset - 8) / 8.0))))
+		P.append(Pi)
+	return P
+
+def binToHex(ba):
+	if ba == None:
+		return ''
+	return ''.join('{:02x}'.format(x) for x in ba)
+
+def hexToBin(hexstr):
+	return bytearray(hexstr.decode("hex"))
 
 ''' Higher degree in leftmost position
 def polToInt(pol):

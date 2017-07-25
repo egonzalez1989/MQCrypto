@@ -9,6 +9,7 @@ class Sflashv1(MatsumotoImai):
 		super(Sflashv1, self).__init__(2**7, 37, 11, 2**258+sum(sum(2**j,j,154*i+76,154*i+152),i,0,17))
 		x = var('x')
 		self.Fqn = self.Fq.extension(x**37+x**12+x**10+x**2+1, 'W')
+		self.PFqn = PolynomialRing(GF(2), 'X', self.n)
 
 	def genAff(self, n):
 		AG = AffineGroup(n, GF(2))
@@ -30,3 +31,6 @@ class Sflashv1(MatsumotoImai):
 	def genP(self):
 		super(Sflashv1, self).genP()
 		self.P = self.P[0:26]
+
+	def setPub(self, P):
+		self.P = P[:26]

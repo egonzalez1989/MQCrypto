@@ -1,0 +1,11 @@
+sage -python keygen.py Sflashv2 /home/edgar/MQCrypto/python/keygen/sflashv2
+sage -python sign.py Sflashv2 69C154F832E5B77557877DD665FAA0E47621762EAE60AC336B3CB945741DE09040 /home/edgar/MQCrypto/python/keygen/sflashv2
+sage -python verify.py Sflashv2 69C154F832E5B77557877DD665FAA0E47621762EAE60AC336B3CB945741DE09040 /home/edgar/MQCrypto/python/keygen/sflashv2
+
+sage -python keygen.py Sflashv1 /home/edgar/MQCrypto/python/keygen/sflashv2
+sage -python sign.py Sflashv1 69C154F832E5B77557877DD665FAA0E47621762EAE60AC336B3CB945741DE09040 /home/edgar/MQCrypto/python/keygen/sflashv2
+sage -python verify.py Sflashv1 69C154F832E5B77557877DD665FAA0E47621762EAE60AC336B3CB945741DE09040 /home/edgar/MQCrypto/python/keygen/sflashv2
+
+sage -python keygen.py UOV 16 40 80 /home/edgar/MQCrypto/python/keygen/uov
+sage -python sign.py UOV 16 40 80 69C154F832E5B77557877DD665FAA0E476217620 /home/edgar/MQCrypto/python/keygen/uov
+sage -python verify.py UOV 16 40 80 69C154F832E5B77557877DD665FAA0E476217620 /home/edgar/MQCrypto/python/keygen/uov

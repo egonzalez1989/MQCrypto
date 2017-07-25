@@ -1,8 +1,8 @@
 from sage.all import *
 from MPKC.Utils.utils import *
 
-q = 2**16
-n = 120
+q = 16
+n = 100
 Fq = GF(q, 'X')
 AG = AffineGroup(n, Fq)
 

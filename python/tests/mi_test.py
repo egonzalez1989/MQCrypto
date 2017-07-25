@@ -3,11 +3,13 @@ from MPKC.Utils.utils import *
 import time
 
 # Toy example
-# x = var('x')
-# # Parameters
-# q = 2**4
-# n = 20
-# alpha = 8
+x = var('x')
+# Parameters
+q = 2**2
+n = 3
+h = 26
+alpha = 2
+f = x **3 + x + 1
 
 # # Find h (inverse of q**t+1)
 # qn = q**n-1
@@ -24,15 +26,15 @@ import time
 # f = PFqn.irreducible_element(n)
 # print f
 
-# Sflash values without minus variant
-i, j, x = var('i', 'j', 'x')
-q = 2**7
-n = 37
-alpha = 11
-qn = q**n-1
-h = xgcd(q**alpha+1, qn)[1] % qn
-#466815348407827775651785930077564057715134843197125142436974563133435145084864#2**258+sum(sum(2**j,j,154*i+76,154*i+152),i,0,17)
-f = x**37 + x**12 + x**10 + x**2 + 1
+# # Sflash values without minus variant
+# i, j, x = var('i', 'j', 'x')
+# q = 2**7
+# n = 37
+# alpha = 11
+# qn = q**n-1
+# h = xgcd(q**alpha+1, qn)[1] % qn
+# #466815348407827775651785930077564057715134843197125142436974563133435145084864#2**258+sum(sum(2**j,j,154*i+76,154*i+152),i,0,17)
+# f = x**37 + x**12 + x**10 + x**2 + 1
 
 start = time.time()
 scheme = MatsumotoImai(q, n, alpha, h)
@@ -43,17 +45,16 @@ print('Object init: {}'.format(time.time()-start))
 
 start = time.time()
 scheme.init()
-print('Key gen: {} - Pub size: {} b'.format(time.time()-start, len(pubToBin(scheme.P))))
-# print('Key gen: {}'.format(time.time()-start))
+print('Key gen: {}'.format(time.time()-start))
 
 vec = vector(scheme.Fq, [1]*n)
 for i in range(n):
 	vec[i] = scheme.Fq.random_element()
 start = time.time()
 sign = scheme.privMap(vec)
-print('Sign: time - {}'.format(time.time()-start))#, result - {}'.format(time.time()-start, sign))
+print('Sign: time - {}'.format(time.time()-start))
 
 start = time.time()
 ver = scheme.pubMap(sign)
 assert(vec == ver)
-print('Verif: time - {}, result - {}'.format(time.time()-start, vec == ver))
+print('Verif: time - {}'.format(time.time()-start))

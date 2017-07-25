@@ -25,3 +25,6 @@ class Sflashv2(MatsumotoImai):
 	def genP(self):
 		super(Sflashv2, self).genP()
 		self.P = self.P[0:26]
+
+	def setPub(self, P):
+		self.P = P[:26]

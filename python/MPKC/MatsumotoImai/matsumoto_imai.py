@@ -23,7 +23,7 @@ class MatsumotoImai(MQBipolar):
 		TX = list(self.Tmap(Xn))
 		QTX = self.Fmap(TX)
 		self.P = self.Smap(QTX)
-		print('MI.genP: {}'.format(time.time() - start))
+		# print('MI.genP: {}'.format(time.time() - start))
 		
 	def getExpTable(self):
 		raise NotImplementedError("Implement me!!")

@@ -52,7 +52,7 @@ class UOV(MQBipolar):
 					A.append(map(lambda deg: px.coefficient(deg), dXo))
 					b.append(px.constant_coefficient())
 				A = matrix(self.Fq, A)
-				b = vector(self.Fq, b) + Fqvec
+				b = vector(self.Fq, b) - Fqvec
 
 				# Add values of solutions for oil variables
 				y = A.solve_right(b)
@@ -78,5 +78,13 @@ class UOV(MQBipolar):
 		start = time.time()
 		MiA = Mi*A
 		Mib = Mi*b
-		Pi = [At*MiA, At*Mib + bt*MiA + A.transpose()*vi, vi*b + bt*Mib + ci]
+		QF = At*MiA
+		# print('A\n{}'.format(A))
+		# Triangular form
+		for j in range(self.n):
+			for k in range(j):
+				QF[k,j] = QF[j,k] + QF[k,j]
+				QF[j,k] = 0
+		# print('Atr\n{}'.format(A))
+		Pi = [QF, At*Mib + bt*MiA + A.transpose()*vi, vi*b + bt*Mib + ci]
 		return Pi

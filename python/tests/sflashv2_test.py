@@ -8,7 +8,7 @@ print('Object init: {}'.format(time.time()-start))
 
 start = time.time()
 scheme.init()
-print('Key gen: {} - Pub size: {} b, Priv size: {}'.format(time.time()-start, len(sysToBin(scheme.P)), 2*len(affToBin(scheme.S))))
+print('Key gen: {}'.format(time.time()-start))
 
 vec = vector(scheme.Fq, [1]*37)
 for i in range(37):
